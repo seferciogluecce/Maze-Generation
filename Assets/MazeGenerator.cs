@@ -8,177 +8,99 @@ public class MazeGenerator : MonoBehaviour
 
     List<List<Vector3>> Grid = new List<List<Vector3>>();
     List<List<Cell>> CellGrid = new List<List<Cell>>();
-    ObjectPoints points;
-    bool draw = false;
-    int MazeWidth = 5;
-    int MazeLength = 5;
-
-    int PlaneWidth = 11;
+    ObjectPoints PointsOnThePlane;
+    int MazeWidth = 11;
+    int MazeHeight = 11;
     int planeHeight = 11;
-    GameObject CubeParents;
-
-
-
-
-    void OnDrawGizmos()
-    {
-
-        Gizmos.color = Color.red;
-        bool color = true;
-
-        if (draw)
-        {
-            foreach (List<Vector3> row in Grid)
-            {
-                foreach (Vector3 point in row)
-                {
-
-                    Gizmos.DrawSphere(point, 0.2f);
-                }
-
-                if (color)
-                {
-                    Gizmos.color = Color.yellow;
-
-                }
-                else
-                {
-                    Gizmos.color = Color.red;
-
-                }
-                color = !color;
-
-            }
-            //Gizmos.color = Color.yellow;
-            //foreach (Vector3 point in points.GetObjectGlobalVertices())
-            //{
-
-            //    Gizmos.DrawSphere(point, 0.3f);
-            //}
-
-        }
-
-    }
-
+    int planeWidth = 11;
+    GameObject BorderParent;//Empty parent object to keep borders transform
+    RecursiveBacktracker RB;
+    UIInfoManager UIIM;
 
     void Start()
     {
-
-        CubeParents = new GameObject("CubesParent");
-        points = this.GetComponent<ObjectPoints>();
-        FillUpTheGrid();
-        RecursiveBacktracker rb = new RecursiveBacktracker();
-        Debug.Log(Grid.Count + "  111  " + Grid[0].Count);
-        CellGrid = rb.GiveMeMyMaze(Grid);
-        draw = true;
-
-        //FillTheGridWithCubes();
-        FillBorders();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
+        UIIM = GetComponent<UIInfoManager>();
+        BorderParent = new GameObject("BorderParent"); 
+        PointsOnThePlane = this.GetComponent<ObjectPoints>();
+        CreateNewMaze();
         
     }
 
-    void FillTheGridWithCubes()
+    public void CreateNewMaze()
     {
-        for (int a = 0; a <MazeLength ; a++)
-        {
-            for (int b = 0; b < MazeWidth; b++)
-            {
+        Destroy(BorderParent);
+        BorderParent = new GameObject("BorderParent");
 
-                if(Grid[a][b]!= Vector3.zero)
-                { 
-               GameObject newCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                newCube.transform.position = Grid[a][b];
+        MazeWidth = Random.Range(2,planeWidth+1);
+        MazeHeight = Random.Range(2, planeHeight+1);
+        UIIM.UpdateUI(MazeHeight,MazeWidth);
+        CreateTheGrid();
+        RB = new RecursiveBacktracker();
+        CellGrid = RB.GetNewMaze(Grid);
+
+        ShowMaze();
+    }
+
+    void ShowMaze()  //Creates maz with borders as cubes
+    {
+        GameObject VerticalBorder = GameObject.CreatePrimitive(PrimitiveType.Cube);  //vertically scaled cube for up and down borders
+        VerticalBorder.transform.localScale = new Vector3(1.5f, 1, 0.5f);
+
+        GameObject HorizontalBorder = GameObject.CreatePrimitive(PrimitiveType.Cube);//horizontally scaled cube for left and right borders
+        HorizontalBorder.transform.localScale = new Vector3(0.5f, 1, 1.5f);
+
+        for (int x = 0; x < MazeWidth; x++)
+        {
+            for (int y = 0; y < MazeHeight; y++)
+            {
+                if (CellGrid[y][x].Borders.Contains(Direction.Up))
+                {
+                    PlaceHorizontalBorder(HorizontalBorder, CellGrid[y][x], Direction.Up);
+                }
+                if (CellGrid[y][x].Borders.Contains(Direction.Down))
+                {
+                    PlaceHorizontalBorder(HorizontalBorder, CellGrid[y][x], Direction.Down);
+                }
+
+                if (CellGrid[y][x].Borders.Contains(Direction.Right))
+                {
+                    PlaceVerticalBorder(VerticalBorder, CellGrid[y][x], Direction.Right);
+                }
+                if (CellGrid[y][x].Borders.Contains(Direction.Left))
+                {
+                    PlaceVerticalBorder(VerticalBorder, CellGrid[y][x], Direction.Left);
                 }
             }
         }
-     }
-
-    void FillBorders()
-    {
-        GameObject upBorder = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        upBorder.transform.localScale = new Vector3(1.5f, 1, 0.5f);
-
-        GameObject sideBorder = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        sideBorder.transform.localScale = new Vector3(0.5f, 1, 1.5f);
-            for (int x = 0; x < MazeWidth; x++)
-
-        {        for (int y = 0; y< MazeLength; y++)
-
-            {
-                if (CellGrid[y][x].Borders.Contains(Directions.N))
-                {
-                    PlaceUpperBorder(sideBorder, CellGrid[y][x],Directions.N);
-                }
-                if (CellGrid[y][x].Borders.Contains(Directions.S))
-                {
-                    PlaceUpperBorder(sideBorder, CellGrid[y][x], Directions.S);
-                }
-                if (CellGrid[y][x].Borders.Contains(Directions.E))
-                {
-                    PlaceSideBorder(upBorder, CellGrid[y][x], Directions.E);
-                }
-                if (CellGrid[y][x].Borders.Contains(Directions.W))
-                {
-                    PlaceSideBorder(upBorder, CellGrid[y][x], Directions.W);
-                }
-
-            }
-        }
-        GameObject.Destroy(upBorder);
-        GameObject.Destroy(sideBorder);
+        GameObject.Destroy(VerticalBorder); //destroy source objects
+        GameObject.Destroy(HorizontalBorder);
     }
 
-    void PlaceUpperBorder(GameObject border, Cell c, Directions d)
-    {
-        if (d == Directions.N)
-        {
-            Instantiate(border, c.position + Vector3.right*0.5f, Quaternion.identity,CubeParents.transform);
-        }
-
-        else
-        {
-            Instantiate(border, c.position + Vector3.left * 0.5f, Quaternion.identity, CubeParents.transform);
-
-        }
-
+    void PlaceHorizontalBorder(GameObject border, Cell c, Direction d) //borders are put moved away from the point to suround it
+    {                                                   //upper border moved up, and lower border moved down along x axis
+        Instantiate(border, c.position + Vector3.right * 0.5f * ((d == Direction.Up) ? 1 : -1), Quaternion.identity, BorderParent.transform);
     }
 
-    void PlaceSideBorder(GameObject border, Cell c, Directions d)
-    {
-        if (d == Directions.W)
-        {
-            Instantiate(border, c.position+  Vector3.forward * 0.5f , Quaternion.identity, CubeParents.transform);
-        }
-
-        else
-        {
-            Instantiate(border, c.position+Vector3.back * 0.5f, Quaternion.identity, CubeParents.transform);
-        }
-
+    void PlaceVerticalBorder(GameObject border, Cell c, Direction d)
+    {                                                   //left border moved left, and right border moved right along z axis
+        Instantiate(border, c.position + Vector3.forward * 0.5f * ((d == Direction.Left) ? 1 : -1), Quaternion.identity, BorderParent.transform);
     }
 
 
-    void FillUpTheGrid()
+    void CreateTheGrid()  //creates grid with given width and length from the points on the plane
     {
+        Grid = new List<List<Vector3>>();
         List<Vector3> OneRow = new List<Vector3>();
 
-        for (int a = 0; a < MazeLength; a++)
+        for (int y = 0; y < MazeHeight; y++)
         {
-            for (int b = 0; b < MazeWidth; b++)
+            for (int x = 0; x < MazeWidth; x++)
             {
-                OneRow.Add(points.GetObjectGlobalVertices()[a  + b* planeHeight]);
+                OneRow.Add(PointsOnThePlane.GetObjectGlobalVertices()[y + x * planeHeight]); //getting the points on the plane from the upper left corner
             }
             Grid.Add(OneRow);
             OneRow = new List<Vector3>();
-
         }
-   
-
     }
 
 }

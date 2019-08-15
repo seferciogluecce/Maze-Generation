@@ -4,85 +4,73 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 
-public class Cell {
-
-    public List<Directions> Borders;
-    public int x;
-    public int y;
+public class Cell {  //a cell consists of its position and borders
+    public List<Direction> Borders;
     public Vector3 position;
-
   public  Cell(Vector3 pos)
     {
         position = pos;
-        Borders = new List<Directions>();
+        Borders = new List<Direction>();
     }
-
-
 }
 
-   public enum Directions
-    {
-        N = 1,
-        S = 2,
-        E = 4,       
-        W= 8
+   public enum Direction //direction's bitwise value
+{
+        Up = 1, //0001
+        Down = 2, //0010
+        Right = 4, //0100
+        Left= 8   //1000
     }
+
 public class RecursiveBacktracker 
 {
+    enum DX // direction's x axis movement value
+    {
+        Right = 1,
+        Left = -1,
+        Up = 0,
+        Down = 0
+    }
+    enum DY //returns direction's y axis movement value
+    {
+        Right = 0,
+        Left = 0,
+        Up = -1,
+        Down = 1
+    }
+    enum OPPOSITE//opposite of direction's bitwise value
+    {
+        Right = 8,
+        Left = 4,
+        Up = 2,
+        Down = 1
+    }
 
-   List<List<int>> grid = new List<List<int>>();
-   List<List<Cell>> gridCell = new List<List<Cell>>();
+    List<List<int>> Grid = new List<List<int>>();
+   List<List<Cell>> CellGrid = new List<List<Cell>>();
+
    int GridHeight = 11;
    int GridWidth = 11;
 
 
-    enum DX
+    public List<List<Cell>> GetNewMaze(List<List<Vector3>> Maze)
     {
-        E =1,
-        W = -1,
-        N = 0,
-        S = 0
+
+        SetGridBounds(Maze);
+        CreateGrid(Maze);
+        CarvePassagesFrom(0, 0, Grid);
+        FillMazeValues();
+        return CellGrid;
     }
-    enum DY
+  
+
+    void SetGridBounds(List<List<Vector3>> Maze)
     {
-        E=0,
-        W=0,
-        N = -1,
-        S = 1
-    }
-    enum OPPOSITE
-    {
-        E = 8,
-        W = 4,
-        N = 2,
-        S = 1
+        GridWidth = Maze[0].Count();
+        GridHeight = Maze.Count();
     }
 
-
-    void carve_passages_from(int cx, int cy, List<List<int>> grid)
-    {
-        List<Directions> Direction = new List<Directions>{Directions.N,Directions.S,Directions.E,Directions.W};
-
-        Direction = Direction.OrderBy(a => Guid.NewGuid()).ToList();
-
-        foreach (Directions dir in Direction)
-        {
-            int nx = cx +   DirToDX(dir);
-            int ny = cy + DirToDY(dir);
-
-            if ( (0 <= ny && ny<= GridHeight - 1) &&  (0 <= nx && nx <= GridWidth - 1 ))
-            {
-                if ( grid[ny][nx] == 0) { 
-                grid[cy][cx] |= (int)dir;
-                grid[ny][nx] |= DirToOpposite(dir);
-                carve_passages_from(nx, ny, grid);
-            }
-            }
-        }
-    }
-
-
-    void FillGrid(List<List<Vector3>> Maze)
+    void CreateGrid(List<List<Vector3>> Maze)  //CellGrid and Grid variables are initially created
     {
         List<Cell> cellRow = new List<Cell>();
         List<int> OneRow = new List<int>();
@@ -93,128 +81,123 @@ public class RecursiveBacktracker
                 cellRow.Add(new Cell(Maze[a][b]));
                 OneRow.Add(0);
             }
-            gridCell.Add(cellRow);
-            grid.Add(OneRow);
+            CellGrid.Add(cellRow);
+            Grid.Add(OneRow);
             cellRow = new List<Cell>();
             OneRow = new List<int>();
         }
     }
 
-
-    public List<List<Cell>> GiveMeMyMaze(List<List<Vector3>> Maze)
+    void CarvePassagesFrom(int cx, int cy, List<List<int>> Grid) //Implementation of recursive backtracking algorithm
     {
+        List<Direction> Directions = new List<Direction>{Direction.Up,Direction.Down,Direction.Right,Direction.Left};
 
-        GridWidth = Maze[0].Count();
-        GridHeight = Maze.Count();
+        Directions = Directions.OrderBy(a => Guid.NewGuid()).ToList();  //Randomize directions
 
-        FillGrid(Maze);
-        carve_passages_from(0,0,grid);
-        ShowTheMaze();
-        return gridCell;
-
-    }
-    void ShowTheMaze()
-    {
-        string a = "";
-        string b = "";
-
-        for (int t = 0; t < GridHeight; t++)
+        foreach (Direction dir in Directions) //check each direction
         {
-            gridCell[t][0].Borders.Add(Directions.W);
+            int nx = cx +   DirToDX(dir);//translate current coordinate to drections coordinate
+            int ny = cy + DirToDY(dir);
+
+            if ( (0 <= ny && ny<= GridHeight - 1) &&  (0 <= nx && nx <= GridWidth - 1 )) //if new coordinate between the bounds
+            {
+                if ( Grid[ny][nx] == 0) { //If the new coordinate unvisited
+                Grid[cy][cx] |= (int)dir; //current direction added to current cell bitwise
+                Grid[ny][nx] |= DirToOpposite(dir);//opposite of current direction added to next cell bitwise
+                CarvePassagesFrom(nx, ny, Grid);//Carving the map continued from the next cell 
+            }
+            }
+        }
+    }
+
+    void FillMazeValues()
+    {
+        string AsciiMapRepresentation = ""; //These are used to show the map as ascii representation and bit values of cells
+        string BitwiseMapRepresentation = "";
+
+        for (int t = 0; t < GridHeight; t++) //leftest border values 
+        {
+            CellGrid[t][0].Borders.Add(Direction.Left);
 
         }
-        for (int t = 0; t < GridWidth; t++)
+        for (int t = 0; t < GridWidth; t++)//uppest border values 
         {
-            gridCell[0][t].Borders.Add(Directions.N);
+            CellGrid[0][t].Borders.Add(Direction.Up);
 
         }
         for (int y = 0; y < GridHeight; y++)
         {
-             int z = 0;
-             a += "\n|";
-             b += "\n";
+             
+             AsciiMapRepresentation += "\n|";
+             BitwiseMapRepresentation += "\n";
 
             for (int x = 0; x < GridWidth; x++)
             {
 
-                b += "(" + grid[y][x] + ")";
-                a += (((grid[y][x] & (int)Directions.S) != 0)? " ":"_") ;
-                z++;
-
-
-                if ((grid[y][x] & (int)Directions.S) == 0)
+                BitwiseMapRepresentation += "(" + Grid[y][x] + ")";
+                AsciiMapRepresentation += (((Grid[y][x] & (int)Direction.Down) != 0)? " ":"_") ;
+                
+                if ((Grid[y][x] & (int)Direction.Down) == 0) //there is a wall in the downside of the map
                 {
-                    gridCell[y][x].Borders.Add(Directions.S);
+                    CellGrid[y][x].Borders.Add(Direction.Down);
                 }
-                    if ((grid[y][x] & (int)Directions.E) == 0)//sağında yol var
+                if ((Grid[y][x] & (int)Direction.Right) == 0)//There is a wall in the rightside of the cell
                 {                
-                    gridCell[y][x].Borders.Add(Directions.E);
-                    a += "|"  ;
+                    CellGrid[y][x].Borders.Add(Direction.Right);
+                    AsciiMapRepresentation += "|"  ;
                 }
-            }
-            a += "  " + z.ToString();
-
-
-
-
-
-
-
+            }           
         }            
  
-Debug.Log(a);
-Debug.Log(b);
-
-       
+            Debug.Log(AsciiMapRepresentation);  //Mapps are printed to console
+            Debug.Log(BitwiseMapRepresentation);     
     }
-
-    int DirToDX(Directions dir)
+    int DirToDX(Direction dir)//returns direction's x axis movement value
     {
 
         switch (dir)
         {
-            case Directions.N:
-                return (int)DX.N;
-            case Directions.S:
-                return (int)DX.S;
-            case Directions.W:
-                return (int)DX.W;
-            case Directions.E:
-                return (int)DX.E;
+            case Direction.Up:
+                return (int)DX.Up;
+            case Direction.Down:
+                return (int)DX.Down;
+            case Direction.Left:
+                return (int)DX.Left;
+            case Direction.Right:
+                return (int)DX.Right;
+        }
+        return 0;
+    }
+    int DirToDY(Direction dir) //returns direction's y axis movement value
+    {
+        switch (dir)
+        {
+            case Direction.Up:
+                return (int)DY.Up;
+            case Direction.Down:
+                return (int)DY.Down;
+            case Direction.Left:
+                return (int)DY.Left;
+            case Direction.Right:
+                return (int)DY.Right;
+        }
+        return 0;
+    }
+    int DirToOpposite(Direction dir) //returns direction's opposite direction value
+    {
+        switch (dir)
+        {
+            case Direction.Up:
+                return (int)OPPOSITE.Up;
+            case Direction.Down:
+                return (int)OPPOSITE.Down;
+            case Direction.Left:
+                return (int)OPPOSITE.Left;
+            case Direction.Right:
+                return (int)OPPOSITE.Right;
         }
         return 0;
     }
 
-    int DirToDY(Directions dir)
-    {
-        switch (dir)
-        {
-            case Directions.N:
-                return (int)DY.N;
-            case Directions.S:
-                return (int)DY.S;
-            case Directions.W:
-                return (int)DY.W;
-            case Directions.E:
-                return (int)DY.E;
-        }
-        return 0;
-    }
-
-    int DirToOpposite(Directions dir)
-    {
-        switch (dir)
-        {
-            case Directions.N:
-                return (int)OPPOSITE.N;
-            case Directions.S:
-                return (int)OPPOSITE.S;
-            case Directions.W:
-                return (int)OPPOSITE.W;
-            case Directions.E:
-                return (int)OPPOSITE.E;
-        }
-        return 0;
-    }
 
 }
