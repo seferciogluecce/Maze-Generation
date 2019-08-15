@@ -10,8 +10,11 @@ public class MazeGenerator : MonoBehaviour
     List<List<Cell>> CellGrid = new List<List<Cell>>();
     ObjectPoints points;
     bool draw = false;
-    int MazeWidth = 11;
-    int MazeLength = 11;
+    int MazeWidth = 8;
+    int MazeLength = 8;
+
+    int PlaneWidth = 11;
+    int planeHeight = 11;
     GameObject CubeParents;
 
 
@@ -61,44 +64,45 @@ public class MazeGenerator : MonoBehaviour
 
     //}
 
-    //void OnDrawGizmos()
-    //{
+    void OnDrawGizmos()
+    {
 
-    //    Gizmos.color = Color.red;
-    //    bool color = true;
+        Gizmos.color = Color.red;
+        bool color = true;
 
-    //    if (draw) {
-    //        foreach (List<Vector3> row in Grid)
-    //        {
-    //            foreach (Vector3 point in row)
-    //            {
+        if (draw)
+        {
+            foreach (List<Vector3> row in Grid)
+            {
+                foreach (Vector3 point in row)
+                {
 
-    //                Gizmos.DrawSphere(point, 0.2f);
-    //            }
+                    Gizmos.DrawSphere(point, 0.2f);
+                }
 
-    //            if (color)
-    //            {
-    //        Gizmos.color = Color.yellow;
+                if (color)
+                {
+                    Gizmos.color = Color.yellow;
 
-    //            }
-    //            else
-    //            {
-    //                Gizmos.color = Color.red;
+                }
+                else
+                {
+                    Gizmos.color = Color.red;
 
-    //            }
-    //            color = !color;
+                }
+                color = !color;
 
-    //        }
-    //        //Gizmos.color = Color.yellow;
-    //        //foreach (Vector3 point in points.GetObjectGlobalVertices())
-    //        //{
+            }
+            //Gizmos.color = Color.yellow;
+            //foreach (Vector3 point in points.GetObjectGlobalVertices())
+            //{
 
-    //        //    Gizmos.DrawSphere(point, 0.3f);
-    //        //}
+            //    Gizmos.DrawSphere(point, 0.3f);
+            //}
 
-    //    }
+        }
 
-    //}
+    }
 
 
     void Start()
@@ -210,7 +214,7 @@ public class MazeGenerator : MonoBehaviour
         {
             for (int b = 0; b < MazeWidth; b++)
             {
-                OneRow.Add(points.GetObjectGlobalVertices()[a*MazeLength+b]);
+                OneRow.Add(points.GetObjectGlobalVertices()[a * planeHeight + b]);
             }
             Grid.Add(OneRow);
             OneRow = new List<Vector3>();
