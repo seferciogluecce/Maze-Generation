@@ -10,59 +10,15 @@ public class MazeGenerator : MonoBehaviour
     List<List<Cell>> CellGrid = new List<List<Cell>>();
     ObjectPoints points;
     bool draw = false;
-    int MazeWidth = 8;
-    int MazeLength = 8;
+    int MazeWidth = 5;
+    int MazeLength = 5;
 
     int PlaneWidth = 11;
     int planeHeight = 11;
     GameObject CubeParents;
 
 
-    //void OnDrawGizmos()
-    //{
-    //    Gizmos.color = Color.red;
-    //    if (draw)
-    //    {
-    //        foreach(Cell c in CellGrid[0])
-    //        {
-    //            Gizmos.color = Color.red;
 
-    //            Gizmos.DrawSphere(c.position, 0.25f);
-    //            Gizmos.color = Color.yellow;
-
-
-    //            if (c.Borders.Contains(Directions.N))
-    //            {
-    //                Gizmos.DrawSphere(c.position + Vector3.right*0.5f, 0.25f);
-
-    //            }
-    //            if (c.Borders.Contains(Directions.S))
-    //            {
-    //                Gizmos.DrawSphere(c.position + Vector3.left * 0.5f, 0.25f);
-
-    //            }
-    //            if (c.Borders.Contains(Directions.E))
-    //            {
-    //                Gizmos.DrawSphere(c.position + Vector3.back * 0.5f, 0.25f);
-
-    //            }
-    //            if (c.Borders.Contains(Directions.W))
-    //            {
-    //                Gizmos.DrawSphere(c.position + Vector3.forward * 0.5f, 0.25f);
-
-    //            }
-
-
-
-
-    //        }
-
-
-    //    }
-
-
-
-    //}
 
     void OnDrawGizmos()
     {
@@ -112,6 +68,7 @@ public class MazeGenerator : MonoBehaviour
         points = this.GetComponent<ObjectPoints>();
         FillUpTheGrid();
         RecursiveBacktracker rb = new RecursiveBacktracker();
+        Debug.Log(Grid.Count + "  111  " + Grid[0].Count);
         CellGrid = rb.GiveMeMyMaze(Grid);
         draw = true;
 
@@ -127,9 +84,9 @@ public class MazeGenerator : MonoBehaviour
 
     void FillTheGridWithCubes()
     {
-        for (int a = 0; a < MazeWidth; a++)
+        for (int a = 0; a <MazeLength ; a++)
         {
-            for (int b = 0; b < MazeLength; b++)
+            for (int b = 0; b < MazeWidth; b++)
             {
 
                 if(Grid[a][b]!= Vector3.zero)
@@ -148,26 +105,26 @@ public class MazeGenerator : MonoBehaviour
 
         GameObject sideBorder = GameObject.CreatePrimitive(PrimitiveType.Cube);
         sideBorder.transform.localScale = new Vector3(0.5f, 1, 1.5f);
-
-        for (int y = 0; y< MazeLength; y++)
-        {
             for (int x = 0; x < MazeWidth; x++)
+
+        {        for (int y = 0; y< MazeLength; y++)
+
             {
-                if (CellGrid[x][y].Borders.Contains(Directions.N))
+                if (CellGrid[y][x].Borders.Contains(Directions.N))
                 {
-                    PlaceUpperBorder(sideBorder, CellGrid[x][y],Directions.N);
+                    PlaceUpperBorder(sideBorder, CellGrid[y][x],Directions.N);
                 }
-                if (CellGrid[x][y].Borders.Contains(Directions.S))
+                if (CellGrid[y][x].Borders.Contains(Directions.S))
                 {
-                    PlaceUpperBorder(sideBorder, CellGrid[x][y], Directions.S);
+                    PlaceUpperBorder(sideBorder, CellGrid[y][x], Directions.S);
                 }
-                if (CellGrid[x][y].Borders.Contains(Directions.E))
+                if (CellGrid[y][x].Borders.Contains(Directions.E))
                 {
-                    PlaceSideBorder(upBorder, CellGrid[x][y], Directions.E);
+                    PlaceSideBorder(upBorder, CellGrid[y][x], Directions.E);
                 }
-                if (CellGrid[x][y].Borders.Contains(Directions.W))
+                if (CellGrid[y][x].Borders.Contains(Directions.W))
                 {
-                    PlaceSideBorder(upBorder, CellGrid[x][y], Directions.W);
+                    PlaceSideBorder(upBorder, CellGrid[y][x], Directions.W);
                 }
 
             }
@@ -214,7 +171,7 @@ public class MazeGenerator : MonoBehaviour
         {
             for (int b = 0; b < MazeWidth; b++)
             {
-                OneRow.Add(points.GetObjectGlobalVertices()[a * planeHeight + b]);
+                OneRow.Add(points.GetObjectGlobalVertices()[a  + b* planeHeight]);
             }
             Grid.Add(OneRow);
             OneRow = new List<Vector3>();

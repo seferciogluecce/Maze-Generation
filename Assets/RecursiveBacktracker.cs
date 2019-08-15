@@ -30,11 +30,10 @@ public class Cell {
 public class RecursiveBacktracker 
 {
 
-   List<Vector3> Grid;
    List<List<int>> grid = new List<List<int>>();
    List<List<Cell>> gridCell = new List<List<Cell>>();
-    int GridLength = 11;
-        int GridWidth = 11;
+   int GridHeight = 11;
+   int GridWidth = 11;
 
 
     enum DX
@@ -62,7 +61,6 @@ public class RecursiveBacktracker
 
     void carve_passages_from(int cx, int cy, List<List<int>> grid)
     {
-
         List<Directions> Direction = new List<Directions>{Directions.N,Directions.S,Directions.E,Directions.W};
 
         Direction = Direction.OrderBy(a => Guid.NewGuid()).ToList();
@@ -70,21 +68,17 @@ public class RecursiveBacktracker
         foreach (Directions dir in Direction)
         {
             int nx = cx +   DirToDX(dir);
-            int ny = cy + DirToDY(dir); 
+            int ny = cy + DirToDY(dir);
 
-
-            if ( (0 <= ny && ny<= GridLength - 1) &&  (0 <= nx && nx <= GridWidth - 1 ))
+            if ( (0 <= ny && ny<= GridHeight - 1) &&  (0 <= nx && nx <= GridWidth - 1 ))
             {
-//                Debug.Log(ny + " " + nx);
-                if ( grid[nx][ny] == 0) { 
-                grid[cx][cy] |= (int)dir;
-                grid[nx][ny] |= DirToOpposite(dir);
+                if ( grid[ny][nx] == 0) { 
+                grid[cy][cx] |= (int)dir;
+                grid[ny][nx] |= DirToOpposite(dir);
                 carve_passages_from(nx, ny, grid);
             }
             }
         }
-
-
     }
 
 
@@ -92,7 +86,7 @@ public class RecursiveBacktracker
     {
         List<Cell> cellRow = new List<Cell>();
         List<int> OneRow = new List<int>();
-        for (int a = 0; a < GridLength; a++)
+        for (int a = 0; a < GridHeight; a++)
         {
             for (int b = 0; b < GridWidth; b++)
             {
@@ -104,24 +98,6 @@ public class RecursiveBacktracker
             cellRow = new List<Cell>();
             OneRow = new List<int>();
         }
-
-        Debug.Log(grid.Count + " " + grid[0].Count);
-        Debug.Log(gridCell.Count + " 333 " + gridCell[0].Count);
-    }
-    List<List<Vector3>>  ConvertToVector(List<List<int>> grid, List<List<Vector3>> Maze    )
-    {
-        for (int a = 0; a < GridLength; a++)
-        {
-            for (int b = 0; b < GridWidth; b++)
-            {
-               if(grid[a][b] == 0)
-                {
-                    Maze[a][b] = Vector3.zero;
-                }
-            }
-            
-        }
-        return Maze;
     }
 
 
@@ -129,12 +105,11 @@ public class RecursiveBacktracker
     {
 
         GridWidth = Maze[0].Count();
-        GridLength = Maze.Count();
+        GridHeight = Maze.Count();
 
         FillGrid(Maze);
         carve_passages_from(0,0,grid);
         ShowTheMaze();
-        // return ConvertToVector( grid, Maze    );
         return gridCell;
 
     }
@@ -143,47 +118,37 @@ public class RecursiveBacktracker
         string a = "";
         string b = "";
 
-        for(int t = 0; t < GridWidth; t++)
+        for (int t = 0; t < GridHeight; t++)
         {
-
+            gridCell[t][0].Borders.Add(Directions.W);
 
         }
         for (int t = 0; t < GridWidth; t++)
         {
-            gridCell[t][0].Borders.Add(Directions.N);
+            gridCell[0][t].Borders.Add(Directions.N);
 
         }
-        for (int t = 0; t < GridLength; t++)
+        for (int y = 0; y < GridHeight; y++)
         {
-            gridCell[0][t].Borders.Add(Directions.W);
-
-        }
-        for (int y = 0; y < GridLength; y++)
-        {
-            int z = 0;
+             int z = 0;
              a += "\n|";
              b += "\n";
 
             for (int x = 0; x < GridWidth; x++)
             {
 
-                b += "(" + grid[x][y] + ")";
-                a += (((grid[x][y] & (int)Directions.S) != 0)? " ":"_") ;
-
-                if ((grid[x][y] & (int)Directions.S) == 0)
-                    gridCell[x][y].Borders.Add(Directions.S);
-
-
+                b += "(" + grid[y][x] + ")";
+                a += (((grid[y][x] & (int)Directions.S) != 0)? " ":"_") ;
                 z++;
-                    if ((grid[x][y] & (int)Directions.E) != 0)//sağında yol var
-                {
-                   // a += ((((grid[x][y] | grid[x+1][y]) & (int)Directions.S ) != 0) ? " " : "_");
-                   // z++;
-                }
-                else
-                {
-                    gridCell[x][y].Borders.Add(Directions.E);
 
+
+                if ((grid[y][x] & (int)Directions.S) == 0)
+                {
+                    gridCell[y][x].Borders.Add(Directions.S);
+                }
+                    if ((grid[y][x] & (int)Directions.E) == 0)//sağında yol var
+                {                
+                    gridCell[y][x].Borders.Add(Directions.E);
                     a += "|"  ;
                 }
             }
@@ -195,25 +160,12 @@ public class RecursiveBacktracker
 
 
 
-        }            string map = "";
+        }            
  
 Debug.Log(a);
 Debug.Log(b);
 
-        for (int y = 0; y < GridLength; y++)
-            {
-
-                for (int x = 0; x < GridWidth; x++)
-                {
-
-                    //if(gridCell[x][y].Borders.Contains())
-
-
-
-
-                }
-            }
-
+       
     }
 
     int DirToDX(Directions dir)
@@ -232,6 +184,7 @@ Debug.Log(b);
         }
         return 0;
     }
+
     int DirToDY(Directions dir)
     {
         switch (dir)
@@ -265,5 +218,3 @@ Debug.Log(b);
     }
 
 }
-
-//https://stackoverflow.com/questions/1818131/convert-an-enum-to-another-type-of-enum
