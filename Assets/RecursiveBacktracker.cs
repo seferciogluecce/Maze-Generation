@@ -24,21 +24,22 @@ public class Cell {  //a cell consists of its position and borders
 
 public class RecursiveBacktracker 
 {
-    enum DX // direction's x axis movement value
+
+    enum DirectionX // direction's x axis movement value
     {
         Right = 1,
         Left = -1,
         Up = 0,
         Down = 0
     }
-    enum DY //returns direction's y axis movement value
+    enum DirectionY //returns direction's y axis movement value
     {
         Right = 0,
         Left = 0,
         Up = -1,
         Down = 1
     }
-    enum OPPOSITE//opposite of direction's bitwise value
+    enum Opposite//opposite of direction's bitwise value
     {
         Right = 8,
         Left = 4,
@@ -46,8 +47,8 @@ public class RecursiveBacktracker
         Down = 1
     }
 
-    List<List<int>> Grid = new List<List<int>>();
-   List<List<Cell>> CellGrid = new List<List<Cell>>();
+    List<List<int>> Grid;
+   List<List<Cell>> CellGrid;
 
    int GridHeight = 11;
    int GridWidth = 11;
@@ -55,7 +56,6 @@ public class RecursiveBacktracker
 
     public List<List<Cell>> GetNewMaze(List<List<Vector3>> Maze)
     {
-
         SetGridBounds(Maze);
         CreateGrid(Maze);
         CarvePassagesFrom(0, 0, Grid);
@@ -72,6 +72,8 @@ public class RecursiveBacktracker
 
     void CreateGrid(List<List<Vector3>> Maze)  //CellGrid and Grid variables are initially created
     {
+        Grid = new List<List<int>>();
+        CellGrid = new List<List<Cell>>();
         List<Cell> cellRow = new List<Cell>();
         List<int> OneRow = new List<int>();
         for (int a = 0; a < GridHeight; a++)
@@ -96,8 +98,8 @@ public class RecursiveBacktracker
 
         foreach (Direction dir in Directions) //check each direction
         {
-            int nx = cx +   DirToDX(dir);//translate current coordinate to drections coordinate
-            int ny = cy + DirToDY(dir);
+            int nx = cx +   DirToDirectionX(dir);//translate current coordinate to drections coordinate
+            int ny = cy + DirToDirectionY(dir);
 
             if ( (0 <= ny && ny<= GridHeight - 1) &&  (0 <= nx && nx <= GridWidth - 1 )) //if new coordinate between the bounds
             {
@@ -152,34 +154,34 @@ public class RecursiveBacktracker
             Debug.Log(AsciiMapRepresentation);  //Mapps are printed to console
             Debug.Log(BitwiseMapRepresentation);     
     }
-    int DirToDX(Direction dir)//returns direction's x axis movement value
+    int DirToDirectionX(Direction dir)//returns direction's x axis movement value
     {
 
         switch (dir)
         {
             case Direction.Up:
-                return (int)DX.Up;
+                return (int)DirectionX.Up;
             case Direction.Down:
-                return (int)DX.Down;
+                return (int)DirectionX.Down;
             case Direction.Left:
-                return (int)DX.Left;
+                return (int)DirectionX.Left;
             case Direction.Right:
-                return (int)DX.Right;
+                return (int)DirectionX.Right;
         }
         return 0;
     }
-    int DirToDY(Direction dir) //returns direction's y axis movement value
+    int DirToDirectionY(Direction dir) //returns direction's y axis movement value
     {
         switch (dir)
         {
             case Direction.Up:
-                return (int)DY.Up;
+                return (int)DirectionY.Up;
             case Direction.Down:
-                return (int)DY.Down;
+                return (int)DirectionY.Down;
             case Direction.Left:
-                return (int)DY.Left;
+                return (int)DirectionY.Left;
             case Direction.Right:
-                return (int)DY.Right;
+                return (int)DirectionY.Right;
         }
         return 0;
     }
@@ -188,13 +190,13 @@ public class RecursiveBacktracker
         switch (dir)
         {
             case Direction.Up:
-                return (int)OPPOSITE.Up;
+                return (int)Opposite.Up;
             case Direction.Down:
-                return (int)OPPOSITE.Down;
+                return (int)Opposite.Down;
             case Direction.Left:
-                return (int)OPPOSITE.Left;
+                return (int)Opposite.Left;
             case Direction.Right:
-                return (int)OPPOSITE.Right;
+                return (int)Opposite.Right;
         }
         return 0;
     }

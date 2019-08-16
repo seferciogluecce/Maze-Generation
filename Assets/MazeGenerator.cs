@@ -4,15 +4,14 @@ using UnityEngine;
 
 public class MazeGenerator : MonoBehaviour
 {
-    // Start is called before the first frame update
 
-    List<List<Vector3>> Grid = new List<List<Vector3>>();
-    List<List<Cell>> CellGrid = new List<List<Cell>>();
+    List<List<Vector3>> Grid;
+    List<List<Cell>> CellGrid;
     ObjectPoints PointsOnThePlane;
     int MazeWidth = 11;
     int MazeHeight = 11;
-    int planeHeight = 11;
-    int planeWidth = 11;
+    readonly int planeHeight = 11;
+    readonly int planeWidth = 11;
     GameObject BorderParent;//Empty parent object to keep borders transform
     RecursiveBacktracker RB;
     UIInfoManager UIIM;
@@ -22,8 +21,8 @@ public class MazeGenerator : MonoBehaviour
         UIIM = GetComponent<UIInfoManager>();
         BorderParent = new GameObject("BorderParent"); 
         PointsOnThePlane = this.GetComponent<ObjectPoints>();
-        CreateNewMaze();
-        
+        RB = new RecursiveBacktracker();
+        CreateNewMaze();       
     }
 
     public void CreateNewMaze()
@@ -35,10 +34,25 @@ public class MazeGenerator : MonoBehaviour
         MazeHeight = Random.Range(2, planeHeight+1);
         UIIM.UpdateUI(MazeHeight,MazeWidth);
         CreateTheGrid();
-        RB = new RecursiveBacktracker();
         CellGrid = RB.GetNewMaze(Grid);
 
         ShowMaze();
+    }
+
+    void CreateTheGrid()  //creates grid with given width and length from the points on the plane
+    {
+        Grid = new List<List<Vector3>>();
+        List<Vector3> OneRow = new List<Vector3>();
+
+        for (int y = 0; y < MazeHeight; y++)
+        {
+            for (int x = 0; x < MazeWidth; x++)
+            {
+                OneRow.Add(PointsOnThePlane.GetObjectGlobalVertices()[y + x * planeHeight]); //getting the points on the plane from the upper left corner
+            }
+            Grid.Add(OneRow);
+            OneRow = new List<Vector3>();
+        }
     }
 
     void ShowMaze()  //Creates maz with borders as cubes
@@ -87,20 +101,6 @@ public class MazeGenerator : MonoBehaviour
     }
 
 
-    void CreateTheGrid()  //creates grid with given width and length from the points on the plane
-    {
-        Grid = new List<List<Vector3>>();
-        List<Vector3> OneRow = new List<Vector3>();
 
-        for (int y = 0; y < MazeHeight; y++)
-        {
-            for (int x = 0; x < MazeWidth; x++)
-            {
-                OneRow.Add(PointsOnThePlane.GetObjectGlobalVertices()[y + x * planeHeight]); //getting the points on the plane from the upper left corner
-            }
-            Grid.Add(OneRow);
-            OneRow = new List<Vector3>();
-        }
-    }
 
 }
