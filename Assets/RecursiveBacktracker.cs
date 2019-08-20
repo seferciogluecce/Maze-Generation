@@ -94,7 +94,7 @@ public class RecursiveBacktracker
     {
         List<Direction> Directions = new List<Direction>{Direction.Up,Direction.Down,Direction.Right,Direction.Left};
 
-        Directions = Directions.OrderBy(a => Guid.NewGuid()).ToList();  //Randomize directions
+        Directions = Randomize(Directions);
 
         foreach (Direction dir in Directions) //check each direction
         {
@@ -201,5 +201,16 @@ public class RecursiveBacktracker
         return 0;
     }
 
+    List<Direction> Randomize(List<Direction> Directions)
+    {
+        for (int i = 0; i < Directions.Count; i++)
+        {
+            Direction temp = Directions[i];
+            int randomIdx = UnityEngine.Random.Range(i, Directions.Count);
+            Directions[i] = Directions[randomIdx];
+            Directions[randomIdx] = temp;
+        }
+        return Directions;
+    }
 
 }
